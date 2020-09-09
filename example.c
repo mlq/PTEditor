@@ -15,7 +15,7 @@
 #define TAG_PROGRESS COLOR_YELLOW "[~]" COLOR_RESET " "
 
 
-#include "ptedit.h"
+#include "ptedit_header.h"
 
 
 int main(int argc, char *argv[]) {
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     goto error;
   }
   ptedit_print_entry_t(vm);
-  printf(TAG_PROGRESS "PTE PFN %zx\n", ptedit_cast(vm.pte, ptedit_pte_t).pfn);
+  printf(TAG_PROGRESS "PTE PFN %x\n", ptedit_cast(vm.pte, ptedit_pte_t).pfn);
 
   printf(TAG_PROGRESS "address[0] = " COLOR_YELLOW "%c" COLOR_RESET"\n", *(volatile char*)address);
   if(*(volatile char*)address == 'A') {
