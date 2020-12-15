@@ -582,10 +582,11 @@ static long device_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
         (void)from_user(&symbol, (void*)ioctl_param, sizeof(kallsyms_symbol_t));
         if (symbol.name) {
           symbol.address = kallsyms_lookup_name(symbol.name);
+          (void)to_user((void*)ioctl_param, &symbol, sizeof(kallsyms_symbol_t));
+          return 0;
         }
-        (void)to_user((void*)ioctl_param, &symbol, sizeof(kallsyms_symbol_t));
 
-        return 0;
+        return -1;
     }
     case PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_ADDRESS:
     {

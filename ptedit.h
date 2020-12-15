@@ -778,17 +778,21 @@ void ptedit_print_entry_line(size_t entry, int line);
  * Lookup symbol from kernel
  *
  * @param[in] symbol name
+ * @return address of symbol or 0
  *
  */
-size_t ptedit_kallsyms_lookup_symbol(kallsyms_symbol_t* symbol);
+size_t ptedit_kallsyms_lookup_name(const char* name);
 
 /**
  * Lookup address from kernel
  *
- * @param[in] symbol name
+ * @param[in] address address of the symbol
+ * @param[out] name name of the symbol
+ *
+ * @return 0 on success, -1 otherwise
  *
  */
-size_t ptedit_kallsyms_lookup_address(kallsyms_symbol_t* symbol);
+int ptedit_kallsyms_lookup_address(size_t address, char name[KALLSYMS_MAX_SYMBOL_LENGTH]);
 
 /** @} */
 

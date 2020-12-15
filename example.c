@@ -114,26 +114,18 @@ int main(int argc, char *argv[]) {
   printf(TAG_OK "Resetting PFN of address\n");
   ptedit_pte_set_pfn(address, 0, address_pfn);
 
-  kallsyms_symbol_t symbol = {
-    .name = "startup_64"
-  };
-
   printf(TAG_OK "Looking up symbol by name\n");
-  ptedit_kallsyms_lookup_symbol(&symbol);
+  size_t symbol_address = ptedit_kallsyms_lookup_name("startup_64");
 
-  if (symbol.address) {
+  if (symbol_address) {
       printf(TAG_OK "OK!\n");
   } else {
       printf(TAG_FAIL "Fail!\n");
   }
 
   printf(TAG_OK "Looking up symbol by address\n");
-  kallsyms_symbol_t symbol2 = {
-    .address = symbol.address
-  };
-
-  ptedit_kallsyms_lookup_address(&symbol2);
-  if (strcmp(symbol2.name, symbol.name) == 0) {
+  char symbol_name[KALLSYMS_MAX_SYMBOL_LENGTH];
+  if (ptedit_kallsyms_lookup_address(symbol_address, symbol_name) == 0 && strcmp(symbol_name, "startup_64") == 0) {
       printf(TAG_OK "OK!\n");
   } else {
       printf(TAG_FAIL "Fail!\n");

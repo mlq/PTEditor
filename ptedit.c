@@ -44,8 +44,6 @@ typedef struct {
 
 ptedit_paging_definition_t ptedit_paging_definition;
 
-
-
 // ---------------------------------------------------------------------------
 ptedit_entry_t ptedit_resolve_kernel(void* address, pid_t pid) {
     ptedit_entry_t vm;
@@ -862,22 +860,36 @@ void ptedit_pte_set_pfn(void* address, pid_t pid, size_t pfn) {
 }
 
 // ---------------------------------------------------------------------------
-size_t ptedit_kallsyms_lookup_symbol(kallsyms_symbol_t* symbol)
+size_t ptedit_kallsyms_lookup_name(const char* name)
 {
 #if defined(LINUX)
-    return ioctl(ptedit_fd, PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_NAME, symbol);
+    kallsyms_symbol_t symbol;
+    size_t name_len = strlen(name);
+    size_t max_copy = (name_len > KALLSYMS_MAX_SYMBOL_LENGTH) ? KALLSYMS_MAX_SYMBOL_LENGTH : name_len;
+    memcpy(&symbol.name, name, max_copy);
+
+    if (ioctl(ptedit_fd, PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_NAME, &symbol) == 0) {
+      return symbol.address;
+    }
 #else
     NO_WINDOWS_SUPPORT;
 #endif
 
-  return -1;
+  return 0;
 }
 
 // ---------------------------------------------------------------------------
-size_t ptedit_kallsyms_lookup_address(kallsyms_symbol_t* symbol)
+int ptedit_kallsyms_lookup_address(size_t address, char name[KALLSYMS_MAX_SYMBOL_LENGTH])
 {
 #if defined(LINUX)
-    return ioctl(ptedit_fd, PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_ADDRESS, symbol);
+    kallsyms_symbol_t symbol = {
+      .address = address
+    };
+
+    if (ioctl(ptedit_fd, PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_ADDRESS, symbol) == 0) {
+      memcpy(name, symbol.name, KALLSYMS_MAX_SYMBOL_LENGTH);
+      return 0;
+    }
 #else
     NO_WINDOWS_SUPPORT;
 #endif
