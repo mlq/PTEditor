@@ -860,3 +860,27 @@ void ptedit_pte_set_pfn(void* address, pid_t pid, size_t pfn) {
     vm.valid = PTEDIT_VALID_MASK_PTE;
     ptedit_update(address, pid, &vm);
 }
+
+// ---------------------------------------------------------------------------
+size_t ptedit_kallsyms_lookup_symbol(kallsyms_symbol_t* symbol)
+{
+#if defined(LINUX)
+    return ioctl(ptedit_fd, PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_NAME, symbol);
+#else
+    NO_WINDOWS_SUPPORT;
+#endif
+
+  return -1;
+}
+
+// ---------------------------------------------------------------------------
+size_t ptedit_kallsyms_lookup_address(kallsyms_symbol_t* symbol)
+{
+#if defined(LINUX)
+    return ioctl(ptedit_fd, PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_ADDRESS, symbol);
+#else
+    NO_WINDOWS_SUPPORT;
+#endif
+
+  return -1;
+}

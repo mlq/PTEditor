@@ -419,6 +419,29 @@ static void vm_to_user(ptedit_entry_t* user, vm_t* vm) {
     user->valid = vm->valid;
 }
 
+typedef const char* (*kallsyms_lookup_t)(unsigned long addr,
+			    unsigned long *symbolsize,
+			    unsigned long *offset,
+			    char **modname, char *namebuf);
+
+static kallsyms_lookup_t kallsyms_lookup_function = NULL;
+
+static int kallsyms_lookup_address(size_t address, char name[KALLSYMS_MAX_SYMBOL_LENGTH]) {
+  if (kallsyms_lookup_function == NULL) {
+    kallsyms_lookup_function = (kallsyms_lookup_t) kallsyms_lookup_name("kallsyms_lookup");
+    if (kallsyms_lookup_function == NULL) {
+      printk(KERN_ALERT "Could not resolve kallsyms_lookup\n");
+      return -1;
+    }
+  }
+
+  /* Check kernel */
+  if (kallsyms_lookup_function(address, NULL, NULL, NULL, name) != NULL) {
+    return 0;
+  }
+
+  return -1;
+}
 
 static long device_ioctl(struct file *file, unsigned int ioctl_num, unsigned long ioctl_param) {
   switch (ioctl_num) {
@@ -551,6 +574,30 @@ static long device_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
     case PTEDITOR_IOCTL_CMD_SET_PAT:
     {
         set_pat(ioctl_param);
+        return 0;
+    }
+    case PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_NAME:
+    {
+        kallsyms_symbol_t symbol;
+        (void)from_user(&symbol, (void*)ioctl_param, sizeof(kallsyms_symbol_t));
+        if (symbol.name) {
+          symbol.address = kallsyms_lookup_name(symbol.name);
+        }
+        (void)to_user((void*)ioctl_param, &symbol, sizeof(kallsyms_symbol_t));
+
+        return 0;
+    }
+    case PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_ADDRESS:
+    {
+        kallsyms_symbol_t symbol;
+        (void)from_user(&symbol, (void*)ioctl_param, sizeof(kallsyms_symbol_t));
+        if (symbol.address) {
+          if (kallsyms_lookup_address(symbol.address, symbol.name) != 0) {
+              return -1;
+          }
+        }
+        (void)to_user((void*)ioctl_param, &symbol, sizeof(kallsyms_symbol_t));
+
         return 0;
     }
 

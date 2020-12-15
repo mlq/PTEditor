@@ -774,6 +774,22 @@ void ptedit_print_entry(size_t entry);
  */
 void ptedit_print_entry_line(size_t entry, int line);
 
+/**
+ * Lookup symbol from kernel
+ *
+ * @param[in] symbol name
+ *
+ */
+size_t ptedit_kallsyms_lookup_symbol(kallsyms_symbol_t* symbol);
+
+/**
+ * Lookup address from kernel
+ *
+ * @param[in] symbol name
+ *
+ */
+size_t ptedit_kallsyms_lookup_address(kallsyms_symbol_t* symbol);
+
 /** @} */
 
 #endif

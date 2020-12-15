@@ -22,6 +22,12 @@
 #define PTEDITOR_DEVICE_PATH L"\\\\.\\" PTEDITOR_DEVICE_NAME
 #endif
 
+#define KALLSYMS_MAX_SYMBOL_LENGTH 128
+typedef struct kallsyms_symbol_s {
+  char name[KALLSYMS_MAX_SYMBOL_LENGTH];
+  size_t address;
+} kallsyms_symbol_t;
+
 /**
  * Structure containing the page-table entries of all levels.
  * The Linux names are aliased with the Intel names.
@@ -136,6 +142,12 @@ typedef struct {
 
 #define PTEDITOR_IOCTL_CMD_SET_PAT \
   _IOR(PTEDITOR_IOCTL_MAGIC_NUMBER, 12, size_t)
+
+#define PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_NAME \
+  _IOR(PTEDITOR_IOCTL_MAGIC_NUMBER, 13, size_t)
+
+#define PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_ADDRESS \
+  _IOR(PTEDITOR_IOCTL_MAGIC_NUMBER, 14, size_t)
 #else
 #define PTEDITOR_READ_PAGE CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define PTEDITOR_WRITE_PAGE CTL_CODE(FILE_DEVICE_UNKNOWN, 0x802, METHOD_BUFFERED, FILE_READ_DATA)
@@ -924,6 +936,22 @@ void ptedit_print_entry(size_t entry);
  *
  */
 void ptedit_print_entry_line(size_t entry, int line);
+
+/**
+ * Lookup symbol from kernel
+ *
+ * @param[in] symbol name
+ *
+ */
+size_t ptedit_kallsyms_lookup_symbol(kallsyms_symbol_t* symbol);
+
+/**
+ * Lookup address from kernel
+ *
+ * @param[in] symbol name
+ *
+ */
+size_t ptedit_kallsyms_lookup_address(kallsyms_symbol_t* symbol);
 
 /** @} */
 
@@ -1789,4 +1817,28 @@ void ptedit_pte_set_pfn(void* address, pid_t pid, size_t pfn) {
     vm.pte = ptedit_set_pfn(vm.pte, pfn);
     vm.valid = PTEDIT_VALID_MASK_PTE;
     ptedit_update(address, pid, &vm);
+}
+
+// ---------------------------------------------------------------------------
+size_t ptedit_kallsyms_lookup_symbol(kallsyms_symbol_t* symbol)
+{
+#if defined(LINUX)
+    return ioctl(ptedit_fd, PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_NAME, symbol);
+#else
+    NO_WINDOWS_SUPPORT;
+#endif
+
+  return -1;
+}
+
+// ---------------------------------------------------------------------------
+size_t ptedit_kallsyms_lookup_address(kallsyms_symbol_t* symbol)
+{
+#if defined(LINUX)
+    return ioctl(ptedit_fd, PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_ADDRESS, symbol);
+#else
+    NO_WINDOWS_SUPPORT;
+#endif
+
+  return -1;
 }
