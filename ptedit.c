@@ -886,7 +886,7 @@ int ptedit_kallsyms_lookup_address(size_t address, char name[KALLSYMS_MAX_SYMBOL
       .address = address
     };
 
-    if (ioctl(ptedit_fd, PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_ADDRESS, symbol) == 0) {
+    if (ioctl(ptedit_fd, PTEDITOR_IOCTL_CMD_KALLSYMS_LOOKUP_ADDRESS, &symbol) == 0) {
       memcpy(name, symbol.name, KALLSYMS_MAX_SYMBOL_LENGTH);
       return 0;
     }
