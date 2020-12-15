@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
   }
 
   printf(TAG_OK "Looking up symbol by address\n");
-  char symbol_name[KALLSYMS_MAX_SYMBOL_LENGTH];
+  char symbol_name[KALLSYMS_MAX_SYMBOL_LENGTH] = {0};
   if (ptedit_kallsyms_lookup_address(symbol_address, symbol_name) == 0 && strcmp(symbol_name, "startup_64") == 0) {
       printf(TAG_OK "OK!\n");
   } else {
